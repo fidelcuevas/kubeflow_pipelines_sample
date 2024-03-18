@@ -1,0 +1,19 @@
+name: Nasdaq Datalink
+description: ETL operations for Datalink.
+
+inputs:
+- {name: --date, type: String, description: 'As-of date for ETL operations.'}
+
+#outputs:
+#- {name: log, type: String, description: 'Log file containing Prometheus-readable metrics.'}
+
+implementation:
+  container:
+    image: registry.sqis.io/qrd/datalink:latest
+    command: [
+      python, 
+      -m, 
+      src,
+      --date,
+      {inputValue: --date}
+    ]

@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: qis-daily-batch-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.18, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-02T14:10:15.388282',
+    pipelines.kubeflow.org/pipeline_spec: '{"inputs": [{"name": "date"}], "name":
+      "Qis daily batch"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.18}
+spec:
+  entrypoint: qis-daily-batch
+  templates:
+  - name: nasdaq-datalink
+    container:
+      args: []
+      command: [python, -m, src, --date, '{{inputs.parameters.date}}']
+      image: registry.sqis.io/qrd/datalink:latest
+    inputs:
+      parameters:
+      - {name: date}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.18
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "ETL operations
+          for Datalink.", "implementation": {"container": {"command": ["python", "-m",
+          "src", "--date", {"inputValue": "--date"}], "image": "registry.sqis.io/qrd/datalink:latest"}},
+          "inputs": [{"description": "As-of date for ETL operations.", "name": "--date",
+          "type": "String"}], "name": "Nasdaq Datalink"}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "a7cb45c715268f0dc62041271431a5c568183469b8a87053b90c884810fb9ba6", "url":
+          "./components/etl/datalink.yaml"}', pipelines.kubeflow.org/arguments.parameters: '{"--date":
+          "{{inputs.parameters.date}}"}'}
+  - name: qis-daily-batch
+    inputs:
+      parameters:
+      - {name: date}
+    dag:
+      tasks:
+      - name: nasdaq-datalink
+        template: nasdaq-datalink
+        arguments:
+          parameters:
+          - {name: date, value: '{{inputs.parameters.date}}'}
+  arguments:
+    parameters:
+    - {name: date}
+  serviceAccountName: pipeline-runner
+  imagePullSecrets:
+  - {name: gitlab-registry-secret}

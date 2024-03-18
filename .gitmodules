@@ -1,0 +1,3 @@
+[submodule "components/etl/datalink"]
+	path = components/etl/datalink
+	url = https://gitlab.sqis.io/QRD/datalink.git
